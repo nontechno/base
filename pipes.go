@@ -100,6 +100,7 @@ func initPipes() {
 		pipeLogger, _ = mux.NewWriter(Logger)
 		pipeMetrics, _ = mux.NewWriter(Metrics)
 
+		pipesInitalized = true
 		GetLogger().SetOutput(pipeLogger)
 	}
 	pipesInitalized = true

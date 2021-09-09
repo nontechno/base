@@ -43,6 +43,10 @@ func CreateNewMetric(id, name, units string) Metric {
 	return &sender
 }
 
+func OneTimeMetric(name string, value interface{}) {
+	CreateNewMetric("one.time.metric:"+name, name, "").Update(value)
+}
+
 type metricClient struct {
 	id    string
 	name  string
