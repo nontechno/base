@@ -15,14 +15,6 @@ import (
 )
 
 const (
-	MuxStdout  = 1
-	MuxStderr  = 3
-	MuxLogger  = 7
-	MuxMetrics = 11
-	MuxUser    = 100
-)
-
-const (
 	sizeOfInt     = 4
 	prefixSize    = sizeOfInt + sizeOfInt
 	idFinderPrint = 0
@@ -89,7 +81,7 @@ func assembleFingerprint() Stream {
 	}
 }
 
-func sendFinderprint(conn net.Conn) error {
+func sendFingerprint(conn net.Conn) error {
 	fp := assembleFingerprint()
 	what := construct(idFinderPrint, fp)
 

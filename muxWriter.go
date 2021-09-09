@@ -158,7 +158,7 @@ func (mux *muxWriter) sender() {
 			continue // reconnect
 		}
 
-		if err := sendFinderprint(conn); err != success {
+		if err := sendFingerprint(conn); err != success {
 			warning("#4a: %v\n", err)
 			continue // reconnect
 		}

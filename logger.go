@@ -28,6 +28,8 @@ func GetLogger() *log.Logger {
 		return logger
 	}
 
+	initPipes()
+
 	guard.Lock()
 	defer guard.Unlock()
 
