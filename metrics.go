@@ -18,9 +18,22 @@ type Metric interface {
 	Update(interface{})
 }
 
+type Counter interface {
+	Add(int64)
+	Set(int64)
+}
+
 type Index = uint16
 
 func CreateNewMetric(id, name, units string) Metric {
+	return Metric(createNewMetric(id, name, units))
+}
+
+func CreateNewCounter(id, name, units string) Counter {
+	return Counter(createNewMetric(id, name, units))
+}
+
+func createNewMetric(id, name, units string) *metricClient {
 	initPipes()
 
 	metricsGuard.Lock()
@@ -56,7 +69,8 @@ type metricClient struct {
 	index     Index
 	value     string
 	last      time.Time
-	//	row   int
+
+	counter int64
 }
 
 type clentUpdate struct {
@@ -120,9 +134,19 @@ func (ms *metricClient) Post(value string) {
 	}
 }
 
+func (ms *metricClient) Add(delta int64) {
+	value := atomic.AddInt64(&ms.counter, delta)
+	ms.Post(fmt.Sprintf("%v", value))
+}
+
+func (ms *metricClient) Set(value int64) {
+	atomic.StoreInt64(&ms.counter, value)
+	ms.Post(fmt.Sprintf("%v", value))
+}
+
 func (ms *metricClient) publish(media io.Writer) {
 	const separator = "\000"
-	value := ms.id + separator + ms.name + separator + ms.units + separator + separator + separator
+	value := ms.id + separator + ms.name + separator + ms.units + separator + ms.value + separator + separator
 	writePacket(media, ms.index|0x8000, value)
 }
 
@@ -161,16 +185,30 @@ func clientCollector() {
 	}
 }
 
-func publishNamesAndUnits(media io.Writer) {
+func publishNamesAndUnits(media io.Writer, force bool) {
 	metricsGuard.Lock()
 	defer metricsGuard.Unlock()
 
 	for _, metric := range metricsStore {
-		if metric != nil && metric.published == false {
+		if metric != nil && (metric.published == false || force) {
 			metric.published = true
 			metric.publish(media)
 		}
 	}
+}
+
+func sendStaticMetricInfo() error {
+	if pipeMetrics != nil {
+		media := bytes.Buffer{}
+		publishNamesAndUnits(&media, true)
+
+		if media.Len() > 0 {
+			if _, err := media.WriteTo(pipeMetrics); err != nil {
+				return err
+			}
+		}
+	}
+	return success
 }
 
 func clientSender() {
@@ -186,7 +224,7 @@ func clientSender() {
 					// publish names-n-units
 					if firstRun {
 						firstRun = false
-						publishNamesAndUnits(&media)
+						publishNamesAndUnits(&media, false)
 					}
 
 					// marshal

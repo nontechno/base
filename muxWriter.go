@@ -160,8 +160,16 @@ func (mux *muxWriter) sender() {
 
 		if err := sendFingerprint(conn); err != success {
 			warning("#4a: %v\n", err)
-			continue // reconnect
+			conn.Close()
+			continue
 		}
+
+		if err := sendStaticMetricInfo(); err != success {
+			warning("#4b: %v\n", err)
+			conn.Close()
+			continue
+		}
+
 		/*
 			todo: revisit use of remainder ...
 
