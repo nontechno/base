@@ -5,12 +5,16 @@
 package base
 
 import (
+	"crypto/sha1"
 	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"net"
 	"os"
 	"os/user"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -18,6 +22,8 @@ const (
 	sizeOfInt     = 4
 	prefixSize    = sizeOfInt + sizeOfInt
 	idFinderPrint = 0
+
+	currentVersion = "0.7.3"
 )
 
 type (
@@ -52,6 +58,15 @@ func deconstruct(input Stream) (int, Stream, int, error) {
 	return id, data, len(input) - int(size) - prefixSize, nil
 }
 
+func getIdFromFingerprint(finger Fingerprint) string {
+	if data, err := json.Marshal(finger); err == success {
+		h := sha1.New()
+		h.Write(data)
+		return hex.EncodeToString(h.Sum(nil))
+	}
+	return fmt.Sprintf("(pid:%v)", os.Getpid())
+}
+
 func assembleFingerprint() Stream {
 	facts := make(Fingerprint)
 
@@ -62,6 +77,14 @@ func assembleFingerprint() Stream {
 	facts["version"] = runtime.Version()
 	facts["app"] = os.Args[0]
 
+	if len(os.Args) > 1 {
+		facts["args"] = strings.Join(os.Args[1:], ";")
+	}
+
+	facts["vesion"] = currentVersion
+	facts["config"] = GetValue("config.filename", "?")
+	facts["comment"] = GetValue("config.comment", "?")
+
 	if hostname, err := os.Hostname(); err == nil {
 		facts["hostname"] = hostname
 	}
@@ -70,6 +93,8 @@ func assembleFingerprint() Stream {
 		facts["user"] = usr.Name
 		facts["username"] = usr.Username
 	}
+
+	facts["id"] = getIdFromFingerprint(facts)
 
 	// var mem runtime.MemStats
 	// runtime.ReadMemStats(&mem)
