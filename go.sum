@@ -2,6 +2,8 @@ github.com/bin3377/logrus-datadog-hook v0.0.3 h1:bICCHlNYl1xrQiaJvMNRQsj2CLe/5TJ
 github.com/bin3377/logrus-datadog-hook v0.0.3/go.mod h1:WpfGRwkB0/yQOJzaKv44OvQvmEXNUMsoKWWdWk+DW54=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
+github.com/mitchellh/go-ps v1.0.0 h1:i6ampVEEF4wQFF+bkYfwYgY+F/uYJDktmvLPf7qIgjc=
+github.com/mitchellh/go-ps v1.0.0/go.mod h1:J4lOc8z8yJs6vUwklHw2XEIiT4z4C40KtWVN3nvg8Pg=
 github.com/nontechno/config v0.7.5 h1:sTEdUPyk6CeFGus0vHEisAruGBRU69ao0Zlz5G2v8xw=
 github.com/nontechno/config v0.7.5/go.mod h1:ssDjj2JQN193yKCgu6s5egQiA/x1L/8mZk7nPGUPpjo=
 github.com/nontechno/config v0.7.6 h1:nQMcfU4dEJQiwbvINCe4Tg8HPZGw52lA8kKkrAVK4ZY=

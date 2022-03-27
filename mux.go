@@ -96,6 +96,13 @@ func assembleFingerprint() Stream {
 
 	facts["id"] = getIdFromFingerprint(facts)
 
+	if value := GetValue("name", ""); len(value) > 0 {
+		facts["name"] = value
+	}
+	if value := GetValue("description", ""); len(value) > 0 {
+		facts["description"] = value
+	}
+
 	// var mem runtime.MemStats
 	// runtime.ReadMemStats(&mem)
 
