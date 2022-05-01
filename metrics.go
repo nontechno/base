@@ -13,17 +13,51 @@ import (
 	"time"
 )
 
-type Metric interface {
-	Post(value string)
-	Update(interface{})
-}
+const (
+	prefixOneTimeMetric = "one.time.metric:"
+)
 
-type Counter interface {
-	Add(int64)
-	Set(int64)
-}
+type (
+	Metric interface {
+		Post(value string)
+		Update(interface{})
+	}
 
-type Index = uint16
+	Counter interface {
+		Add(int64)
+		Set(int64)
+	}
+
+	Index = uint16
+
+	metricClient struct {
+		id    string
+		name  string
+		units string
+
+		published bool
+		index     Index
+		value     string
+		last      time.Time
+
+		counter int64
+	}
+
+	clentUpdate struct {
+		index Index
+		value string
+	}
+)
+
+var (
+	vacantMetricSlot uint32
+	metricsGuard     sync.Mutex
+	metricsStore     []*metricClient
+
+	metricsInitialized = false
+	metricsPipe        = make(chan clentUpdate, 1234)
+	tobesentPipe       = make(chan []clentUpdate, 123)
+)
 
 func CreateNewMetric(id, name, units string) Metric {
 	return Metric(createNewMetric(id, name, units))
@@ -37,12 +71,25 @@ func createNewMetric(id, name, units string) *metricClient {
 	initPipes()
 
 	metricsGuard.Lock()
+	defer metricsGuard.Unlock()
+
 	if !metricsInitialized {
 		metricsInitialized = true
 		go clientCollector()
 		go clientSender()
 	}
-	metricsGuard.Unlock()
+
+	// let's see if we already have a metric with this 'id'
+	if metricsStore != nil {
+		for _, entry := range metricsStore {
+			if entry != nil {
+				if entry.id == id {
+					warning("a redundant metric creation, id: %s", id)
+					return entry
+				}
+			}
+		}
+	}
 
 	sender := metricClient{
 		id:        id,
@@ -56,26 +103,8 @@ func createNewMetric(id, name, units string) *metricClient {
 	return &sender
 }
 
-func OneTimeMetric(name string, value interface{}) {
-	CreateNewMetric("one.time.metric:"+name, name, "").Update(value)
-}
-
-type metricClient struct {
-	id    string
-	name  string
-	units string
-
-	published bool
-	index     Index
-	value     string
-	last      time.Time
-
-	counter int64
-}
-
-type clentUpdate struct {
-	index Index
-	value string
+func OneTimeMetric(name string, value interface{}, units string) {
+	CreateNewMetric(prefixOneTimeMetric+name, name, units).Update(value)
 }
 
 func (cu *clentUpdate) write(media io.Writer) {
@@ -149,16 +178,6 @@ func (ms *metricClient) publish(media io.Writer) {
 	value := ms.id + separator + ms.name + separator + ms.units + separator + ms.value + separator + separator
 	writePacket(media, ms.index|0x8000, value)
 }
-
-var (
-	vacantMetricSlot uint32
-	metricsGuard     sync.Mutex
-	metricsStore     []*metricClient
-
-	metricsInitialized = false
-	metricsPipe        = make(chan clentUpdate, 1234)
-	tobesentPipe       = make(chan []clentUpdate, 123)
-)
 
 func clientCollector() {
 

@@ -23,7 +23,7 @@ const (
 	prefixSize    = sizeOfInt + sizeOfInt
 	idFinderPrint = 0
 
-	currentVersion = "0.7.3"
+	currentVersion = "0.7.4"
 )
 
 type (

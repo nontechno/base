@@ -34,7 +34,7 @@ func checkProcess(depth int, pid int) bool {
 	}
 }
 
-/// this func loads settings from an external file and applies them to the process's environment
+// this func loads settings from an external file and applies them to the process's environment
 func LoadEnvFile(name string) {
 	data, err := ioutil.ReadFile(name)
 	if err != nil {

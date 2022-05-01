@@ -61,9 +61,7 @@ func GetLogger() *log.Logger {
 		l.Infof("not using datadog (missing api key)")
 	}
 
-	logger = l.WithFields(log.Fields{
-		"service.name": GetValue("service.name", "preference.service"),
-	}).Logger
+	logger = l.WithFields(log.Fields{"service.name": GetValue("service.name", "preference.service")}).Logger
 	return logger
 }
 
