@@ -110,7 +110,7 @@ func CloseReceiver(port int) error {
 	muxGuard.Unlock()
 
 	if receiver == nil {
-		GetLogger().Warning("failed to find a receiver with specified port [%v]", port)
+		GetLogger().Warning("failed to find a receiver with specified port ", port)
 		return success
 	}
 

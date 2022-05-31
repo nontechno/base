@@ -124,7 +124,7 @@ func (cu *clentUpdate) write(media io.Writer) {
 }
 
 func (ms *metricClient) register() {
-	metricsGuard.Lock()
+	// metricsGuard.Lock()
 
 	if metricsStore == nil {
 		metricsStore = make([]*metricClient, 100)
@@ -134,7 +134,7 @@ func (ms *metricClient) register() {
 		metricsStore = store
 	}
 	metricsStore[ms.index] = ms
-	metricsGuard.Unlock()
+	// metricsGuard.Unlock()
 }
 
 func (ms *metricClient) Update(value interface{}) {
